@@ -35,7 +35,7 @@ Adafruit_VEML7700 veml7700 = Adafruit_VEML7700(); //create object copy
 #define D_WHITE_CONTENT "White content"
 
 const char HTTP_SNS_WHITE[] PROGMEM = "{s}%s " D_WHITE_CONTENT "{m}%d {e}";
-const char JSON_SNS_VEML7700[] PROGMEM = ",\"%s\":{\"" D_JSON_ILLUMINANCE "\":%d,\"" D_JSON_WHITE_CONTENT "\":%d}";
+const char JSON_SNS_VEML7700[] PROGMEM = ",\"%s\":{\"" D_JSON_ILLUMINANCE "\":%.4f,\"" D_JSON_WHITE_CONTENT "\":%d}";
 
 #define D_CMND_VEML7700_PWR "power"
 #define D_CMND_VEML7700_GAIN "gain"
@@ -57,7 +57,7 @@ struct VEML7700STRUCT
   bool active = 0;
   char types[9]   = D_NAME_VEML7700;
   uint8_t address = VEML7700_I2CADDR_DEFAULT;
-  uint32_t lux_normalized = 0;
+  float lux_normalized = 0;
   uint32_t white_normalized = 0;
 } veml7700_sensor;
 
@@ -97,7 +97,7 @@ uint8_t VEML7700TranslateItInt (uint16_t ittimems){
 }
 
 void VEML7700EverySecond(void) {
-  veml7700_sensor.lux_normalized = (uint32_t) veml7700.readLuxNormalized();
+  veml7700_sensor.lux_normalized = veml7700.readLuxNormalized();
   veml7700_sensor.white_normalized = (uint32_t) veml7700.readWhiteNormalized();
 }
 
@@ -111,7 +111,7 @@ void VEML7700Show(bool json)
 #endif  // USE_DOMOTICZ
 #ifdef USE_WEBSERVER
   } else {
-    WSContentSend_PD(HTTP_SNS_ILLUMINANCE, D_NAME_VEML7700, veml7700_sensor.lux_normalized);
+    WSContentSend_PD(HTTP_SNS_ILLUMINANCE, D_NAME_VEML7700, &veml7700_sensor.lux_normalized);
     WSContentSend_PD(HTTP_SNS_WHITE, D_NAME_VEML7700, veml7700_sensor.white_normalized);
 #endif // USE_WEBSERVER
   }
